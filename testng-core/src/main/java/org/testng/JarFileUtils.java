@@ -76,6 +76,12 @@ class JarFileUtils {
         if (Parser.canParse(jeName.toLowerCase())) {
           InputStream inputStream = jf.getInputStream(je);
           File copyFile = new File(file, jeName);
+          // vuln-fix: Zip Slip Vulnerability - ported from 7.7
+          // https://github.com/cbeust/testng/commit/47afa2c8a29e2cf925238af1ad7c76fba282793f
+          if (!copyFile.toPath().normalize().startsWith(file.toPath().normalize())) {
+            throw new IOException("Bad zip entry");
+          }
+          // vuln-fix
           Files.copyFile(inputStream, copyFile);
           if (matchesXmlPathInJar(je)) {
             suitePath = copyFile.toString();
